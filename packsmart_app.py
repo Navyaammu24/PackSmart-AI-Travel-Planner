@@ -1,7 +1,5 @@
 import streamlit as st
 import random
-from fpdf import FPDF
-from io import BytesIO
 
 st.set_page_config(page_title="PackSmart", page_icon="🧳")
 st.title("🧳 PackSmart – AI-Based Travel Luggage Planner")
@@ -43,7 +41,7 @@ trip_type = st.selectbox("🎯 Trip Type", ['Beach', 'Hiking', 'Business', 'Wedd
 weather = st.selectbox("☁️ Weather", ['Hot', 'Cold', 'Moderate', 'Warm'])
 days = st.slider("🗓️ Trip Duration (in Days)", 1, 14)
 
-# Destination Tips
+# Destination Banner with Theme
 if destination == "Goa":
     st.markdown("### 🌊 Goa – Beach vibes & sunsets!")
     st.success("☀️ Tip: Don't forget your sunglasses and sunscreen!")
@@ -74,28 +72,3 @@ if st.button("🎒 Show My Packing List"):
     for item in items:
         emoji = emoji_map.get(item, '')
         st.markdown(f"• {item} {emoji}")
-
-# Generate PDF in-memory
-def generate_pdf(items):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=14)
-    pdf.cell(200, 10, txt="Your Travel Packing List", ln=True, align='C')
-    pdf.ln(10)
-    for item in items:
-        emoji = emoji_map.get(item, '')
-        pdf.cell(200, 10, txt=f"- {item} {emoji}", ln=True)
-    pdf_output = BytesIO()
-    pdf.output(pdf_output)
-    pdf_output.seek(0)
-    return pdf_output
-
-# Show Download Button
-if items:
-    pdf_data = generate_pdf(items)
-    st.download_button(
-        label="📄 Download Packing List as PDF",
-        data=pdf_data,
-        file_name="Packing_List.pdf",
-        mime="application/pdf"
-    )
