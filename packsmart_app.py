@@ -1,6 +1,7 @@
 import streamlit as st
 import random
 from fpdf import FPDF
+from io import BytesIO
 
 st.set_page_config(page_title="PackSmart", page_icon="🧳")
 st.title("🧳 PackSmart – AI-Based Travel Luggage Planner")
@@ -42,11 +43,11 @@ trip_type = st.selectbox("🎯 Trip Type", ['Beach', 'Hiking', 'Business', 'Wedd
 weather = st.selectbox("☁️ Weather", ['Hot', 'Cold', 'Moderate', 'Warm'])
 days = st.slider("🗓️ Trip Duration (in Days)", 1, 14)
 
-# Destination Banner with Theme
+# Destination Tips
 if destination == "Goa":
     st.markdown("### 🌊 Goa – Beach vibes & sunsets!")
     st.success("☀️ Tip: Don't forget your sunglasses and sunscreen!")
-    
+
 elif destination == "Manali":
     st.markdown("### ❄️ Manali – Chilling in the Himalayan heights!")
     st.info("🧥 Tip: Thermals and gloves are must-haves in the snow!")
@@ -68,13 +69,13 @@ if st.button("🎒 Show My Packing List"):
     else:
         all_items = sum(packing_rules.values(), [])
         items = random.sample(all_items, 4)
-    
+
     st.success("✅ Recommended Packing List:")
     for item in items:
         emoji = emoji_map.get(item, '')
         st.markdown(f"• {item} {emoji}")
 
-# Function to generate PDF
+# Generate PDF in-memory
 def generate_pdf(items):
     pdf = FPDF()
     pdf.add_page()
@@ -84,13 +85,17 @@ def generate_pdf(items):
     for item in items:
         emoji = emoji_map.get(item, '')
         pdf.cell(200, 10, txt=f"- {item} {emoji}", ln=True)
-    path = "packing_list.pdf"
-    pdf.output(path)
-    return path
+    pdf_output = BytesIO()
+    pdf.output(pdf_output)
+    pdf_output.seek(0)
+    return pdf_output
 
-# PDF Download Button
+# Show Download Button
 if items:
-    if st.button("📄 Download Packing List as PDF"):
-        pdf_path = generate_pdf(items)
-        with open(pdf_path, "rb") as f:
-            st.download_button("Download PDF", f, file_name="Packing_List.pdf")
+    pdf_data = generate_pdf(items)
+    st.download_button(
+        label="📄 Download Packing List as PDF",
+        data=pdf_data,
+        file_name="Packing_List.pdf",
+        mime="application/pdf"
+    )
